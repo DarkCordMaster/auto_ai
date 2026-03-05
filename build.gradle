@@ -1,0 +1,47 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '3.4.3'
+    id 'io.spring.dependency-management' version '1.1.7'
+}
+
+group = 'com.autoai'
+version = '1.0-SNAPSHOT'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // Spring Boot Starter Web
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    
+    // Apache POI for Excel generation
+    implementation 'org.apache.poi:poi-ooxml:5.2.3'
+    
+    // OkHttp for API requests
+    implementation 'com.squareup.okhttp3:okhttp:4.10.0'
+    
+    // JSON processing
+    implementation 'org.json:json:20230227'
+    
+    // Lombok
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
+
+// Gradle 9.x 호환성을 위해 bootRun 설정 유지
+bootRun {
+    mainClass = 'com.autoai.AutoAiApplication'
+}

@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auto AI Doc - Integrated Analyzer</title>
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --bg: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.6);
+            --text: #f8fafc;
+            --border: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            background-image: radial-gradient(circle at 20% 20%, #1e1b4b, #0f172a);
+            color: var(--text);
+            margin: 0;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            font-size: 3rem;
+            margin: 0;
+            background: linear-gradient(to right, #818cf8, #c084fc, #fb7185);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 24px;
+            width: 100%;
+            max-width: 1000px;
+        }
+
+        .upload-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.2s;
+        }
+
+        .upload-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary);
+        }
+
+        .card-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card-desc {
+            font-size: 0.85rem;
+            color: #94a3b8;
+            margin-bottom: 20px;
+        }
+
+        .drop-zone {
+            border: 2px dashed rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 30px 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .drop-zone.active {
+            border-color: var(--primary);
+            background: rgba(99, 102, 241, 0.1);
+        }
+
+        .file-list {
+            margin-top: 15px;
+            font-size: 0.85rem;
+            color: #cbd5e1;
+            text-align: left;
+            max-height: 80px;
+            overflow-y: auto;
+        }
+
+        .footer {
+            margin-top: 50px;
+            width: 100%;
+            max-width: 1000px;
+            text-align: center;
+        }
+
+        .btn-main {
+            background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+            color: white;
+            border: none;
+            padding: 18px 60px;
+            border-radius: 16px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.4);
+            transition: all 0.2s;
+        }
+
+        .btn-main:hover {
+            transform: scale(1.05);
+            box-shadow: 0 20px 25px -5px rgba(99, 102, 241, 0.5);
+        }
+
+        .btn-main:disabled {
+            background: #475569;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(8px);
+            z-index: 100;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .spinner {
+            width: 50px; height: 50px;
+            border: 5px solid rgba(99, 102, 241, 0.1);
+            border-top: 5px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Auto AI Integrated Doc</h1>
+        <p style="color: #94a3b8; margin-top: 10px;">파일 역할을 나누어 업로드하면 AI가 문맥을 파악하여 완벽한 명세서를 만듭니다.</p>
+    </div>
+
+    <div class="grid">
+        <!-- Controller Zone -->
+        <div class="upload-card">
+            <div class="card-title">🚀 Controllers</div>
+            <div class="card-desc">API 입구 (가장 핵심 분석 대상)</div>
+            <div class="drop-zone" id="dz-controller">
+                클릭하거나 파일 드롭 (.java)
+                <input type="file" id="fi-controller" multiple hidden accept=".java">
+            </div>
+            <div class="file-list" id="fl-controller"></div>
+        </div>
+
+        <!-- Service Zone -->
+        <div class="upload-card">
+            <div class="card-title">⚙️ Services</div>
+            <div class="card-desc">비즈니스 로직 분석용</div>
+            <div class="drop-zone" id="dz-service">
+                클릭하거나 파일 드롭 (.java)
+                <input type="file" id="fi-service" multiple hidden accept=".java">
+            </div>
+            <div class="file-list" id="fl-service"></div>
+        </div>
+
+        <!-- DTO Zone -->
+        <div class="upload-card">
+            <div class="card-title">📦 DTOs / Models</div>
+            <div class="card-desc">JSON 필드 명세 추출용</div>
+            <div class="drop-zone" id="dz-dto">
+                클릭하거나 파일 드롭 (.java)
+                <input type="file" id="fi-dto" multiple hidden accept=".java">
+            </div>
+            <div class="file-list" id="fl-dto"></div>
+        </div>
+
+        <!-- Mapper / Other Zone -->
+        <div class="upload-card">
+            <div class="card-title">💾 Mappers / Others</div>
+            <div class="card-desc">DB 연동 및 기타 참조 파일</div>
+            <div class="drop-zone" id="dz-mapper">
+                클릭하거나 파일 드롭 (.java, .xml)
+                <input type="file" id="fi-mapper" multiple hidden accept=".java,.xml">
+            </div>
+            <div class="file-list" id="fl-mapper"></div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <button class="btn-main" id="btn-generate" disabled>통합 분석 및 엑셀 생성</button>
+    </div>
+
+    <div class="loading-overlay" id="loading">
+        <div class="spinner"></div>
+        <p style="margin-top: 20px; font-weight: 600;">AI가 전체 프로젝트 문맥을 분석 중입니다... (약 10~30초 소요)</p>
+    </div>
+
+    <script>
+        const categories = ['controller', 'service', 'dto', 'mapper'];
+        const filesByCat = { controller: [], service: [], dto: [], mapper: [] };
+
+        categories.forEach(cat => {
+            const dz = document.getElementById(`dz-${cat}`);
+            const fi = document.getElementById(`fi-${cat}`);
+            const fl = document.getElementById(`fl-${cat}`);
+
+            dz.onclick = () => fi.click();
+            fi.onchange = (e) => updateFiles(cat, e.target.files);
+
+            dz.ondragover = (e) => { e.preventDefault(); dz.classList.add('active'); };
+            dz.ondragleave = () => dz.classList.remove('active');
+            dz.ondrop = (e) => {
+                e.preventDefault();
+                dz.classList.remove('active');
+                updateFiles(cat, e.dataTransfer.files);
+            };
+        });
+
+        function updateFiles(cat, files) {
+            filesByCat[cat] = Array.from(files);
+            const fl = document.getElementById(`fl-${cat}`);
+            fl.innerHTML = filesByCat[cat].map(f => `<div>📄 ${f.name}</div>`).join('');
+            
+            // 컨트롤러가 하나라도 있어야 버튼 활성화
+            document.getElementById('btn-generate').disabled = filesByCat.controller.length === 0;
+        }
+
+        document.getElementById('btn-generate').onclick = async () => {
+            const loading = document.getElementById('loading');
+            loading.style.display = 'flex';
+
+            const formData = new FormData();
+            Object.keys(filesByCat).forEach(cat => {
+                filesByCat[cat].forEach(file => {
+                    formData.append(cat, file); // 카테고리별로 키값 설정
+                });
+            });
+
+            try {
+                const response = await fetch('/api/doc/analyze-integrated', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'Integrated_API_Spec.xlsx';
+                    a.click();
+                } else {
+                    alert("분석 중 오류가 발생했습니다.");
+                }
+            } catch (e) {
+                alert("네트워크 오류!");
+            } finally {
+                loading.style.display = 'none';
+            }
+        };
+    </script>
+</body>
+</html>
