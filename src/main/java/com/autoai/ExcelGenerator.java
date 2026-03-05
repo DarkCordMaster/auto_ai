@@ -19,7 +19,7 @@ public class ExcelGenerator {
     private CellStyle subHeaderStyle;
     private CellStyle labelStyle;
     private CellStyle contentStyle;
-    private CellStyle centerContentStyle; // 중앙 정렬용 추가
+    private CellStyle centerContentStyle;
 
     public void generate(String jsonData, String outputPath) throws IOException {
         workbook = new XSSFWorkbook();
@@ -39,7 +39,7 @@ public class ExcelGenerator {
             sheet.setColumnWidth(1, 6000);
             sheet.setColumnWidth(2, 4500);
             sheet.setColumnWidth(3, 4000);
-            sheet.setColumnWidth(4, 25000);
+            sheet.setColumnWidth(4, 8000);
 
             drawApiBlock(api, i + 1);
         }
@@ -51,13 +51,11 @@ public class ExcelGenerator {
     }
 
     private void drawApiBlock(JSONObject api, int index) {
-        // [1] 상단 기본정보
         drawRowWithAutoHeight(new String[]{"번호", String.valueOf(index), "기능", api.optString("title")}, new int[]{0, 1, 2, 3}, new boolean[]{false, false, false, true});
         drawRowWithAutoHeight(new String[]{"Method", api.optString("httpMethod"), "URI", api.optString("apiPath")}, new int[]{0, 1, 2, 3}, new boolean[]{false, false, false, true});
         drawKeyValueRow("설명", api.optString("description"));
         currentRow++;
 
-        // [2] Request 영역
         drawFullWidthBar("Request", sectionStyle);
         drawFullWidthBar("Header", subHeaderStyle);
         drawTableHeader(new String[]{"key", "value"}, new int[]{0, 1}, 1, 4);
@@ -72,7 +70,6 @@ public class ExcelGenerator {
         drawTableData(api.optJSONArray("reqBody"), new String[]{"type", "value"}, 1, 4, contentStyle);
         currentRow++;
 
-        // [3] Response 영역
         drawFullWidthBar("Response", sectionStyle);
         drawFullWidthBar("Header", subHeaderStyle);
         drawTableHeader(new String[]{"key", "value"}, new int[]{0, 1}, 1, 4);
@@ -85,13 +82,13 @@ public class ExcelGenerator {
 
     private void drawRowWithAutoHeight(String[] vals, int[] cols, boolean[] isMerged) {
         Row row = sheet.createRow(currentRow++);
-        float maxHeight = 22f;
+        float maxHeight = 24f;
         for (int i = 0; i < vals.length; i++) {
             Cell cell = row.createCell(cols[i]);
             cell.setCellValue(vals[i]);
             cell.setCellStyle(i % 2 == 0 ? labelStyle : centerContentStyle);
             if (isMerged[i]) mergeAndBorder(sheet, currentRow - 1, currentRow - 1, cols[i], 4);
-            maxHeight = Math.max(maxHeight, calculateHeight(vals[i], isMerged[i] ? 35000 : 6000));
+            maxHeight = Math.max(maxHeight, calculateHeight(vals[i], isMerged[i] ? 12000 : 6000));
         }
         row.setHeightInPoints(maxHeight);
     }
@@ -101,7 +98,7 @@ public class ExcelGenerator {
         createCell(row, 0, key, labelStyle);
         createCell(row, 1, value, contentStyle);
         mergeAndBorder(sheet, currentRow - 1, currentRow - 1, 1, 4);
-        row.setHeightInPoints(calculateHeight(value, 40000));
+        row.setHeightInPoints(calculateHeight(value, 20000));
     }
 
     private void drawTableData(JSONArray data, String[] keys, int mergeStart, int mergeEnd, CellStyle style) {
@@ -109,52 +106,72 @@ public class ExcelGenerator {
             Row row = sheet.createRow(currentRow++);
             for(int i=0; i<5; i++) createCell(row, i, "N/A", style);
             mergeAndBorder(sheet, currentRow - 1, currentRow - 1, mergeStart, mergeEnd);
+            row.setHeightInPoints(24f);
             return;
         }
         for (int i = 0; i < data.length(); i++) {
             JSONObject item = data.getJSONObject(i);
             Row row = sheet.createRow(currentRow++);
             createCell(row, 0, item.optString(keys[0]), centerContentStyle);
+            
             String val2 = item.optString(keys[1]);
-            createCell(row, 1, val2, style);
+            // JSON 문자열인 경우 예쁘게 포맷팅 (추가 로직)
+            String formattedVal = formatIfJson(val2);
+            
+            createCell(row, 1, formattedVal, style);
             mergeAndBorder(sheet, currentRow - 1, currentRow - 1, mergeStart, mergeEnd);
-            row.setHeightInPoints(calculateHeight(val2, 35000));
+            row.setHeightInPoints(calculateHeight(formattedVal, 18000));
         }
+    }
+
+    private String formatIfJson(String str) {
+        if (str == null || str.trim().isEmpty()) return str;
+        try {
+            if (str.trim().startsWith("{")) {
+                return new JSONObject(str).toString(2); // 2칸 들여쓰기 적용
+            } else if (str.trim().startsWith("[")) {
+                return new JSONArray(str).toString(2);
+            }
+        } catch (Exception e) {
+            // JSON 형식이 아니면 원래 문자열 그대로 반환
+        }
+        return str;
     }
 
     private void drawTableData5Col(JSONArray data) {
         if (data == null || data.isEmpty()) {
             Row row = sheet.createRow(currentRow++);
-            for(int i=0; i<5; i++) createCell(row, i, "N/A", contentStyle);
+            for(int i=0; i<5; i++) createCell(row, i, "N/A", centerContentStyle);
+            row.setHeightInPoints(24f);
             return;
         }
         for (int i = 0; i < data.length(); i++) {
             JSONObject item = data.getJSONObject(i);
             Row row = sheet.createRow(currentRow++);
             createCell(row, 0, item.optString("name"), centerContentStyle);
-            createCell(row, 1, item.optString("value"), contentStyle);
+            createCell(row, 1, item.optString("value"), centerContentStyle);
             createCell(row, 2, item.optString("type"), centerContentStyle);
             createCell(row, 3, item.optString("required"), centerContentStyle);
             String desc = item.optString("desc");
             createCell(row, 4, desc, contentStyle);
-            row.setHeightInPoints(calculateHeight(desc, 15000));
+            row.setHeightInPoints(calculateHeight(desc, 8000));
         }
     }
 
     private float calculateHeight(String text, int width) {
-        if (text == null || text.isEmpty()) return 22f;
+        if (text == null || text.isEmpty()) return 24f;
         int charPerLine = width / 256; 
         String[] lines = text.split("\n");
         int totalLines = 0;
         for(String line : lines) {
-            totalLines += Math.ceil((float)line.length() / charPerLine);
+            totalLines += Math.ceil((float)line.length() / (charPerLine > 0 ? charPerLine : 1));
         }
-        return Math.max(22f, totalLines * 16f + 8f);
+        return Math.max(24f, totalLines * 16f + 10f);
     }
 
     private void drawFullWidthBar(String text, CellStyle style) {
         Row row = sheet.createRow(currentRow++);
-        row.setHeightInPoints(28f);
+        row.setHeightInPoints(30f);
         Cell cell = row.createCell(0);
         cell.setCellValue(text);
         cell.setCellStyle(style);
@@ -163,7 +180,7 @@ public class ExcelGenerator {
 
     private void drawTableHeader(String[] names, int[] cols, int lastMergeStart, int lastMergeEnd) {
         Row row = sheet.createRow(currentRow++);
-        row.setHeightInPoints(22f);
+        row.setHeightInPoints(24f);
         for (int i = 0; i < names.length; i++) {
             Cell cell = row.createCell(cols[i]);
             cell.setCellValue(names[i]);
@@ -202,8 +219,9 @@ public class ExcelGenerator {
         sectionStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
         sectionStyle.setAlignment(HorizontalAlignment.CENTER);
         sectionStyle.setVerticalAlignment(VerticalAlignment.CENTER);
-        Font f1 = workbook.createFont(); f1.setFontName("맑은 고딕"); f1.setBold(true); f1.setColor(IndexedColors.WHITE.getIndex());
-        sectionStyle.setFont(f1);
+        Font whiteBold = workbook.createFont(); 
+        whiteBold.setFontName("맑은 고딕"); whiteBold.setBold(true); whiteBold.setColor(IndexedColors.WHITE.getIndex());
+        sectionStyle.setFont(whiteBold);
         setBorders(sectionStyle);
 
         subHeaderStyle = workbook.createCellStyle();
@@ -222,7 +240,7 @@ public class ExcelGenerator {
         setBorders(labelStyle);
 
         contentStyle = workbook.createCellStyle();
-        contentStyle.setVerticalAlignment(VerticalAlignment.TOP);
+        contentStyle.setVerticalAlignment(VerticalAlignment.CENTER);
         contentStyle.setWrapText(true);
         contentStyle.setFont(defaultFont);
         setBorders(contentStyle);
@@ -230,7 +248,6 @@ public class ExcelGenerator {
         centerContentStyle = workbook.createCellStyle();
         centerContentStyle.cloneStyleFrom(contentStyle);
         centerContentStyle.setAlignment(HorizontalAlignment.CENTER);
-        centerContentStyle.setVerticalAlignment(VerticalAlignment.CENTER);
     }
 
     private void setBorders(CellStyle style) {

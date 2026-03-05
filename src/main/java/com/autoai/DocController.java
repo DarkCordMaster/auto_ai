@@ -24,7 +24,8 @@ public class DocController {
             @RequestParam(value = "controller", required = false) List<MultipartFile> controllers,
             @RequestParam(value = "service", required = false) List<MultipartFile> services,
             @RequestParam(value = "dto", required = false) List<MultipartFile> dtos,
-            @RequestParam(value = "mapper", required = false) List<MultipartFile> mappers
+            @RequestParam(value = "mapper", required = false) List<MultipartFile> mappers,
+            @RequestParam(value = "fileName", required = false) String customFileName
     ) throws Exception {
         
         if (apiKey == null || apiKey.isEmpty()) {
@@ -57,15 +58,16 @@ public class DocController {
             throw new Exception("AI 분석 결과가 비어있습니다. 잠시 후 다시 시도해주세요.");
         }
 
-        // 파일명 자동 생성 (첫 번째 컨트롤러 파일명 기준)
-        String baseName = "Project";
-        if (controllers != null && !controllers.isEmpty()) {
-            String originalName = controllers.get(0).getOriginalFilename();
-            if (originalName != null) {
-                baseName = originalName.replace(".java", "").replace("Controller", "");
-            }
+        // 파일명 결정 (사용자 입력 우선, 없으면 날짜 기준)
+        String fileName;
+        if (customFileName != null && !customFileName.trim().isEmpty()) {
+            fileName = customFileName.trim();
+            if (!fileName.endsWith(".xlsx")) fileName += ".xlsx";
+        } else {
+            String today = java.time.LocalDate.now().toString().replace("-", "");
+            fileName = "통합_API_명세서_" + today + ".xlsx";
         }
-        String fileName = baseName + "_api문서.xlsx";
+        
         String outputPath = fileName;
         
         generator.generate(analysisResult, outputPath);
@@ -91,10 +93,8 @@ public class DocController {
         }
     }
 
-    // 기존의 단순 분석 API (유지)
     @PostMapping("/analyze")
     public ResponseEntity<Resource> analyze(@RequestParam("files") List<MultipartFile> files) throws Exception {
-        // ... (이전 코드와 동일하므로 생략 가능하나 호환성을 위해 유지)
-        return analyzeIntegrated(files, null, null, null);
+        return analyzeIntegrated(files, null, null, null, null);
     }
 }

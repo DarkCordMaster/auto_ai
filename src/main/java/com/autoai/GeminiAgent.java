@@ -30,28 +30,25 @@ public class GeminiAgent {
     public String analyzeCode(String fileName, String codeContent) throws IOException {
         String cleanedCode = minifyCode(codeContent);
         
-        // 프롬프트를 ExcelGenerator가 기대하는 JSON 구조에 맞춰 구체화
         String prompt = "당신은 전문 Java 백엔드 개발자입니다. 제공된 소스코드를 분석하여 상세한 API 명세서를 JSON 배열 형식으로 작성하세요.\n\n" +
                 "### 반드시 다음 JSON 구조를 지키세요 ###\n" +
                 "[\n" +
                 "  {\n" +
-                "    \"title\": \"기능 명칭 (예: 회원 가입)\",\n" +
-                "    \"httpMethod\": \"GET/POST/PUT/DELETE 등\",\n" +
-                "    \"apiPath\": \"/api/v1/user/join\",\n" +
-                "    \"description\": \"기능에 대한 상세 설명\",\n" +
+                "    \"title\": \"기능 명칭\",\n" +
+                "    \"httpMethod\": \"GET/POST 등\",\n" +
+                "    \"apiPath\": \"/api/path\",\n" +
+                "    \"description\": \"설명\",\n" +
                 "    \"reqHeaders\": [ { \"key\": \"Content-Type\", \"value\": \"application/json\" } ],\n" +
-                "    \"reqParams\": [ { \"name\": \"id\", \"value\": \"sample_id\", \"type\": \"String\", \"required\": \"Y/N\", \"desc\": \"설명\" } ],\n" +
-                "    \"reqBody\": [ { \"type\": \"JSON\", \"value\": \"{\\\"name\\\": \\\"홍길동\\\"}\" } ],\n" +
+                "    \"reqParams\": [ { \"name\": \"id\", \"value\": \"val\", \"type\": \"String\", \"required\": \"Y\", \"desc\": \"설명\" } ],\n" +
+                "    \"reqBody\": [ { \"type\": \"JSON\", \"value\": \"{\\n  \\\"key\\\": \\\"value\\\"\\n}\" } ],\n" +
                 "    \"resHeaders\": [],\n" +
-                "    \"resBody\": [ { \"code\": \"200\", \"desc\": \"성공 설명\" }, { \"code\": \"400\", \"desc\": \"에러 설명\" } ]\n" +
+                "    \"resBody\": [ { \"code\": \"200\", \"desc\": \"성공\" } ]\n" +
                 "  }\n" +
                 "]\n\n" +
-                "### 분석 지침 ###\n" +
-                "1. @RequestMapping, @GetMapping 등의 어노테이션을 통해 경로와 메소드를 정확히 추출하세요.\n" +
-                "2. @RequestParam, @PathVariable, @RequestBody 등을 분석하여 파라미터와 바디 정보를 상세히 기술하세요.\n" +
-                "3. 서비스 로직이나 주석을 참고하여 에러 코드(400, 401, 500 등)와 성공 응답을 최대한 추론하여 작성하세요.\n" +
-                "4. 데이터가 없는 필드는 빈 배열([])로 두지 말고, 예시 데이터나 '없음'을 넣어 실질적인 명세서가 되게 하세요.\n" +
-                "5. 응답 결과는 반드시 JSON 배열만 출력하세요. 설명글은 생략하세요.\n\n" +
+                "### 중요 지침 ###\n" +
+                "1. reqBody의 'value' 필드에 들어가는 JSON 샘플 데이터는 반드시 줄바꿈(\\n)과 들여쓰기를 포함한 Pretty-print 형식으로 작성하세요.\n" +
+                "2. 데이터가 한 줄로 길게 늘어지지 않게 가독성을 최우선으로 하세요.\n" +
+                "3. 응답 결과는 반드시 JSON 배열만 출력하세요.\n\n" +
                 "### 소스코드 ###\n" + cleanedCode;
 
         JSONObject requestBody = new JSONObject();
