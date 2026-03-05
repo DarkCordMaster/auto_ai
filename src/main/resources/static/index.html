@@ -20,16 +20,69 @@
             background-image: radial-gradient(circle at 20% 20%, #1e1b4b, #0f172a);
             color: var(--text);
             margin: 0;
-            padding: 40px;
+            padding: 0;
             display: flex;
             flex-direction: column;
             align-items: center;
             min-height: 100vh;
         }
 
+        /* 웰컴/로그인 화면 스타일 */
+        #auth-section {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            width: 100%;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .auth-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 40px;
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        /* 메인 화면 스타일 */
+        #main-section {
+            display: none;
+            width: 100%;
+            max-width: 1100px;
+            padding: 40px 20px;
+            box-sizing: border-box;
+        }
+
         .header {
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 40px;
+            position: relative;
+        }
+
+        .logout-btn {
+            position: absolute;
+            top: 0; right: 0;
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            padding: 8px 16px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .logout-btn:hover {
+            background: #ef4444;
+            color: white;
         }
 
         h1 {
@@ -48,6 +101,9 @@
             padding: 5px;
             border-radius: 12px;
             border: 1px solid var(--border);
+            width: fit-content;
+            margin-left: auto;
+            margin-right: auto;
         }
 
         .tab {
@@ -67,7 +123,6 @@
         .tab-content {
             display: none;
             width: 100%;
-            max-width: 1000px;
             flex-direction: column;
             align-items: center;
         }
@@ -78,7 +133,6 @@
 
         .input-group {
             width: 100%;
-            max-width: 1000px;
             margin-bottom: 20px;
             display: flex;
             flex-direction: column;
@@ -148,6 +202,7 @@
             display: flex;
             flex-direction: column;
             transition: transform 0.2s;
+            box-sizing: border-box;
         }
 
         .upload-card:hover {
@@ -185,11 +240,6 @@
             background: rgba(99, 102, 241, 0.05);
         }
 
-        .drop-zone.active {
-            border-color: var(--primary);
-            background: rgba(99, 102, 241, 0.1);
-        }
-
         .file-list {
             margin-top: 15px;
             font-size: 0.85rem;
@@ -197,7 +247,6 @@
             text-align: left;
             max-height: 150px;
             overflow-y: auto;
-            padding-right: 5px;
         }
 
         .file-item {
@@ -210,20 +259,8 @@
             border-radius: 8px;
         }
 
-        .file-name {
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            max-width: 80%;
-        }
-
         .remove-btn {
-            background: none;
-            border: none;
-            color: #ef4444;
-            cursor: pointer;
-            font-size: 1.2rem;
-            font-weight: bold;
+            background: none; border: none; color: #ef4444; cursor: pointer; font-size: 1.2rem;
         }
 
         .footer {
@@ -234,199 +271,165 @@
 
         .btn-main {
             background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
-            color: white;
-            border: none;
-            padding: 18px 60px;
-            border-radius: 16px;
-            font-size: 1.2rem;
-            font-weight: 700;
-            cursor: pointer;
-            box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.4);
-            transition: all 0.2s;
+            color: white; border: none; padding: 18px 60px; border-radius: 16px; font-size: 1.2rem; font-weight: 700; cursor: pointer; box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.4); transition: all 0.2s;
         }
 
-        .btn-main:hover {
-            transform: scale(1.05);
-            box-shadow: 0 20px 25px -5px rgba(99, 102, 241, 0.5);
-        }
-
-        .btn-main:disabled {
-            background: #475569;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
+        .btn-main:hover { transform: scale(1.05); box-shadow: 0 20px 25px -5px rgba(99, 102, 241, 0.5); }
+        .btn-main:disabled { background: #475569; cursor: not-allowed; transform: none; box-shadow: none; }
 
         .btn-sub {
-            background: rgba(99, 102, 241, 0.2);
-            color: #818cf8;
-            border: 1px solid var(--primary);
-            padding: 8px 16px;
-            border-radius: 10px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            white-space: nowrap;
+            background: rgba(99, 102, 241, 0.2); color: #818cf8; border: 1px solid var(--primary); padding: 8px 16px; border-radius: 10px; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.2s; white-space: nowrap;
         }
 
-        .btn-sub:hover {
-            background: var(--primary);
-            color: white;
+        .mode-option {
+            display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 0.9rem; background: rgba(255, 255, 255, 0.05); padding: 8px 16px; border-radius: 10px; border: 1px solid var(--border);
         }
+
+        .mode-option:has(input:checked) { border-color: var(--primary); background: rgba(99, 102, 241, 0.1); color: white; }
 
         .loading-overlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(15, 23, 42, 0.8);
-            backdrop-filter: blur(8px);
-            z-index: 100;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
+            display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(8px); z-index: 100; flex-direction: column; justify-content: center; align-items: center;
         }
 
-        .spinner {
-            width: 50px; height: 50px;
-            border: 5px solid rgba(99, 102, 241, 0.1);
-            border-top: 5px solid var(--primary);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
+        .spinner { width: 50px; height: 50px; border: 5px solid rgba(99, 102, 241, 0.1); border-top: 5px solid var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>API 문서 자동생성 AI 에이전트</h1>
-        <p style="color: #94a3b8; margin-top: 10px;">GEMINI 기반 문서 생성 및 통합 관리</p>
-    </div>
 
-    <div class="tabs">
-        <div class="tab active" onclick="switchTab('analyze')">🚀 AI 분석 생성</div>
-        <div class="tab" onclick="switchTab('notion')">📝 노션 문서 생성</div>
-        <div class="tab" onclick="switchTab('merge')">📚 문서 파일 취합</div>
-    </div>
-
-    <div class="input-group">
-        <label class="input-label">📂 프로젝트 폴더 경로 (로컬)</label>
-        <div class="input-flex">
-            <button class="btn-sub" onclick="handleFolderPicker()" title="폴더 선택">📁 선택</button>
-            <input type="text" id="project-path" class="filename-input" placeholder="직접 입력하거나 '선택' 버튼을 눌러주세요.">
-            <button class="btn-sub" onclick="handlePathScan()">🔍 자동 스캔</button>
+    <!-- 1. 세션 시작 (인증) 섹션 -->
+    <section id="auth-section">
+        <div class="auth-card">
+            <div style="font-size: 4rem; margin-bottom: 20px;">🤖</div>
+            <h1 style="font-size: 2rem; margin-bottom: 10px;">Welcome to Auto AI Doc</h1>
+            <p style="color: #94a3b8; margin-bottom: 30px;">Gemini API 키를 입력하여 시작하세요.<br>보안을 위해 세션에만 임시 보관됩니다.</p>
+            
+            <div class="input-group" style="text-align: left;">
+                <label class="input-label">Gemini API Key</label>
+                <input type="password" id="auth-api-key" class="filename-input" placeholder="여기에 API 키를 입력하세요.">
+            </div>
+            
+            <button class="btn-main" style="width: 100%; margin-top: 10px;" onclick="handleLogin()">시작하기</button>
+            <p id="auth-error" style="color: #ef4444; font-size: 0.85rem; margin-top: 15px; display: none;"></p>
         </div>
-    </div>
+    </section>
 
-    <div class="input-group">
-        <label for="custom-filename" id="filename-label" class="input-label">📄 분석 결과 파일명</label>
-        <input type="text" id="custom-filename" class="filename-input" placeholder="예: MyProject_API_명세서 (확장자 제외)">
-        <div id="filename-error" class="error-msg"></div>
-    </div>
+    <!-- 2. 메인 도구 섹션 -->
+    <section id="main-section">
+        <div class="header">
+            <button class="logout-btn" onclick="handleLogout()">로그아웃</button>
+            <h1>API 문서 자동생성 AI 에이전트</h1>
+            <p style="color: #94a3b8; margin-top: 10px;">GEMINI 기반 문서 생성 및 통합 관리</p>
+        </div>
 
-    <div id="tab-analyze" class="tab-content active">
-        <div class="grid">
-            <div class="upload-card">
-                <div class="card-title">🚀 Controllers</div>
-                <div class="card-desc">ctl, controller 파일</div>
-                <div class="drop-zone" onclick="document.getElementById('fi-controller').click()">
-                    클릭하거나 파일 드롭 (.java)
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('analyze')">🚀 AI 분석 생성</div>
+            <div class="tab" onclick="switchTab('notion')">📝 노션 문서 생성</div>
+            <div class="tab" onclick="switchTab('merge')">📚 문서 파일 취합</div>
+        </div>
+
+        <div class="input-group">
+            <label class="input-label">📂 프로젝트 폴더 경로 (로컬)</label>
+            <div class="input-flex">
+                <button class="btn-sub" onclick="handleFolderPicker()" title="폴더 선택">📁 선택</button>
+                <input type="text" id="project-path" class="filename-input" placeholder="직접 입력하거나 '선택' 버튼을 눌러주세요.">
+                <button class="btn-sub" onclick="handlePathScan()">🔍 자동 스캔</button>
+            </div>
+        </div>
+
+        <div class="input-group" style="flex-direction: row; align-items: center; gap: 15px; margin-bottom: 25px;">
+            <label class="input-label" style="margin-bottom: 0; white-space: nowrap;">⚡ 분석 모드:</label>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <label class="mode-option">
+                    <input type="radio" name="analysis-mode" value="false" checked onclick="updateModeDesc()">
+                    <span>🍃 절약 모드</span>
+                </label>
+                <label class="mode-option">
+                    <input type="radio" name="analysis-mode" value="true" onclick="updateModeDesc()">
+                    <span>🔥 풀파워 모드</span>
+                </label>
+            </div>
+            <div id="mode-description" style="font-size: 0.85rem; color: #94a3b8; margin-left: 10px; flex: 1;">
+                🍃 <b>메서드 내부 로직을 제거</b>하여 토큰을 획기적으로 절약합니다.
+            </div>
+        </div>
+
+        <div class="input-group">
+            <label for="custom-filename" id="filename-label" class="input-label">📄 분석 결과 파일명</label>
+            <input type="text" id="custom-filename" class="filename-input" placeholder="예: MyProject_API_명세서">
+            <div id="filename-error" class="error-msg"></div>
+        </div>
+
+        <!-- 탭 내용들 (기존과 동일) -->
+        <div id="tab-analyze" class="tab-content active">
+            <div class="grid">
+                <div class="upload-card">
+                    <div class="card-title">🚀 Controllers</div>
+                    <div class="drop-zone" onclick="document.getElementById('fi-controller').click()">클릭/드롭 (.java)</div>
                     <input type="file" id="fi-controller" multiple hidden accept=".java" onchange="addFiles('controller', this.files)">
+                    <div class="file-list" id="fl-controller"></div>
                 </div>
-                <div class="file-list" id="fl-controller"></div>
-            </div>
-            <div class="upload-card">
-                <div class="card-title">⚙️ Services</div>
-                <div class="card-desc">svc, service 파일</div>
-                <div class="drop-zone" onclick="document.getElementById('fi-service').click()">
-                    클릭하거나 파일 드롭 (.java)
+                <div class="upload-card">
+                    <div class="card-title">⚙️ Services</div>
+                    <div class="drop-zone" onclick="document.getElementById('fi-service').click()">클릭/드롭 (.java)</div>
                     <input type="file" id="fi-service" multiple hidden accept=".java" onchange="addFiles('service', this.files)">
+                    <div class="file-list" id="fl-service"></div>
                 </div>
-                <div class="file-list" id="fl-service"></div>
-            </div>
-            <div class="upload-card">
-                <div class="card-title">📦 DTOs / Models</div>
-                <div class="card-desc">idt, odt, dto 파일</div>
-                <div class="drop-zone" onclick="document.getElementById('fi-dto').click()">
-                    클릭하거나 파일 드롭 (.java)
+                <div class="upload-card">
+                    <div class="card-title">📦 DTOs / Models</div>
+                    <div class="drop-zone" onclick="document.getElementById('fi-dto').click()">클릭/드롭 (.java)</div>
                     <input type="file" id="fi-dto" multiple hidden accept=".java" onchange="addFiles('dto', this.files)">
+                    <div class="file-list" id="fl-dto"></div>
                 </div>
-                <div class="file-list" id="fl-dto"></div>
-            </div>
-            <div class="upload-card">
-                <div class="card-title">💾 Mappers / Others</div>
-                <div class="card-desc">DB 및 Mapper</div>
-                <div class="drop-zone" onclick="document.getElementById('fi-mapper').click()">
-                    클릭하거나 파일 드롭 (.java, .xml)
+                <div class="upload-card">
+                    <div class="card-title">💾 Mappers / Others</div>
+                    <div class="drop-zone" onclick="document.getElementById('fi-mapper').click()">클릭/드롭 (.java, .xml)</div>
                     <input type="file" id="fi-mapper" multiple hidden accept=".java,.xml" onchange="addFiles('mapper', this.files)">
+                    <div class="file-list" id="fl-mapper"></div>
                 </div>
-                <div class="file-list" id="fl-mapper"></div>
             </div>
+            <div class="footer"><button class="btn-main" id="btn-generate" disabled onclick="handleAnalyze()">생성 시작</button></div>
         </div>
-        <div class="footer">
-            <button class="btn-main" id="btn-generate" disabled onclick="handleAnalyze()">생성 시작</button>
-        </div>
-    </div>
 
-    <div id="tab-notion" class="tab-content">
-        <div class="upload-card" style="width: 100%; max-width: 1000px; margin-bottom: 24px; box-sizing: border-box;">
-            <div class="card-title" style="justify-content: space-between;">
-                <span>📝 프로젝트 정보 입력</span>
-                <button class="btn-sub" onclick="handleAutoSummary()" id="btn-auto-summary">🤖 AI 도움받기 (코드 분석)</button>
-            </div>
-            <div style="display: flex; flex-direction: column; gap: 15px;">
-                <div>
-                    <label style="font-size: 0.9rem; color: #818cf8; display: block; margin-bottom: 5px;">서비스 설명</label>
-                    <textarea id="service-desc" class="textarea-input" placeholder="이 프로젝트가 어떤 서비스인지 설명해주세요."></textarea>
+        <div id="tab-notion" class="tab-content">
+            <div class="upload-card" style="width: 100%; margin-bottom: 24px;">
+                <div class="card-title" style="justify-content: space-between;">
+                    <span>📝 프로젝트 정보 입력</span>
+                    <button class="btn-sub" onclick="handleAutoSummary()" id="btn-auto-summary">🤖 AI 도움받기</button>
                 </div>
-                <div>
-                    <label style="font-size: 0.9rem; color: #818cf8; display: block; margin-bottom: 5px;">기획 및 설계</label>
-                    <textarea id="planning-design" class="textarea-input" placeholder="기획 의도나 주요 설계 특징을 입력해주세요."></textarea>
-                </div>
-                <div>
-                    <label style="font-size: 0.9rem; color: #818cf8; display: block; margin-bottom: 5px;">개발 기간</label>
-                    <input type="text" id="dev-period" class="filename-input" style="font-size: 0.9rem;" placeholder="예: 2024.01 - 2024.03 (3개월)">
+                <div style="display: flex; flex-direction: column; gap: 15px; margin-top: 15px;">
+                    <textarea id="service-desc" class="textarea-input" placeholder="서비스 설명"></textarea>
+                    <textarea id="planning-design" class="textarea-input" placeholder="기획 및 설계"></textarea>
+                    <input type="text" id="dev-period" class="filename-input" placeholder="개발 기간 (예: 2024.01-03)">
                 </div>
             </div>
-        </div>
-        <div class="grid">
-            <div class="upload-card">
-                <div class="card-title">🚀 Controllers</div>
-                <div class="drop-zone" onclick="document.getElementById('fi-notion-controller').click()">
-                    파일 선택 (.java)
+            <div class="grid">
+                <div class="upload-card">
+                    <div class="card-title">🚀 Controllers</div>
+                    <div class="drop-zone" onclick="document.getElementById('fi-notion-controller').click()">파일 선택</div>
                     <input type="file" id="fi-notion-controller" multiple hidden accept=".java" onchange="addFiles('notion-controller', this.files)">
+                    <div class="file-list" id="fl-notion-controller"></div>
                 </div>
-                <div class="file-list" id="fl-notion-controller"></div>
-            </div>
-            <div class="upload-card">
-                <div class="card-title">⚙️ Others (Service/DTO)</div>
-                <div class="drop-zone" onclick="document.getElementById('fi-notion-other').click()">
-                    파일 선택 (.java, .xml)
+                <div class="upload-card">
+                    <div class="card-title">⚙️ Others</div>
+                    <div class="drop-zone" onclick="document.getElementById('fi-notion-other').click()">파일 선택</div>
                     <input type="file" id="fi-notion-other" multiple hidden accept=".java,.xml" onchange="addFiles('notion-other', this.files)">
+                    <div class="file-list" id="fl-notion-other"></div>
                 </div>
-                <div class="file-list" id="fl-notion-other"></div>
             </div>
+            <div class="footer"><button class="btn-main" id="btn-notion" disabled onclick="handleNotion()">노션용 마크다운 생성</button></div>
         </div>
-        <div class="footer">
-            <button class="btn-main" id="btn-notion" disabled onclick="handleNotion()">노션용 마크다운 생성</button>
-        </div>
-    </div>
 
-    <div id="tab-merge" class="tab-content">
-        <div class="upload-card" style="width: 100%; max-width: 1000px; box-sizing: border-box;">
-            <div class="card-title">📂 Merge Excels</div>
-            <div class="card-desc">합칠 엑셀 파일들을 모두 선택해주세요 (.xlsx)</div>
-            <div class="drop-zone" id="dz-merge" onclick="document.getElementById('fi-merge').click()" style="padding: 60px 10px;">
-                클릭하거나 엑셀 파일들을 드래그 앤 드롭
+        <div id="tab-merge" class="tab-content">
+            <div class="upload-card" style="width: 100%;">
+                <div class="card-title">📂 Merge Excels</div>
+                <div class="drop-zone" onclick="document.getElementById('fi-merge').click()" style="padding: 60px 10px;">엑셀 파일들을 드래그 앤 드롭</div>
                 <input type="file" id="fi-merge" multiple hidden accept=".xlsx" onchange="addFiles('merge', this.files)">
+                <div class="file-list" id="fl-merge"></div>
             </div>
-            <div class="file-list" id="fl-merge"></div>
+            <div class="footer"><button class="btn-main" id="btn-merge" disabled onclick="handleMerge()">하나로 취합하기</button></div>
         </div>
-        <div class="footer">
-            <button class="btn-main" id="btn-merge" disabled onclick="handleMerge()">하나로 취합하기</button>
-        </div>
-    </div>
+    </section>
 
     <div class="loading-overlay" id="loading">
         <div class="spinner"></div>
@@ -434,117 +437,128 @@
     </div>
 
     <script>
-        const filesByCat = { 
-            controller: [], service: [], dto: [], mapper: [], 
-            'notion-controller': [], 'notion-other': [], 
-            merge: [] 
-        };
+        const filesByCat = { controller: [], service: [], dto: [], mapper: [], 'notion-controller': [], 'notion-other': [], merge: [] };
         let currentMode = 'analyze';
+
+        window.onload = async () => {
+            const response = await fetch('/api/doc/auth/check');
+            const isAuthenticated = await response.json();
+            if (isAuthenticated) showMain();
+            updateModeDesc();
+        };
+
+        async function handleLogin() {
+            const keyInput = document.getElementById('auth-api-key');
+            const key = keyInput.value.trim();
+            const btn = event.target;
+            const errorMsg = document.getElementById('auth-error');
+            
+            if (!key) { 
+                errorMsg.innerText = "* API 키를 입력해주세요.";
+                errorMsg.style.display = 'block';
+                return; 
+            }
+            
+            errorMsg.style.display = 'none';
+            btn.disabled = true;
+            btn.innerText = "🔑 키 검증 중...";
+
+            const formData = new FormData();
+            formData.append('apiKey', key);
+            
+            try {
+                const response = await fetch('/api/doc/auth/login', { method: 'POST', body: formData });
+                if (response.ok) {
+                    showMain();
+                } else {
+                    const text = await response.text();
+                    errorMsg.innerText = text || "인증 실패";
+                    errorMsg.style.display = 'block';
+                    keyInput.classList.add('error');
+                }
+            } catch (e) {
+                errorMsg.innerText = "네트워크 오류가 발생했습니다.";
+                errorMsg.style.display = 'block';
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "시작하기";
+            }
+        }
+
+        async function handleLogout() {
+            await fetch('/api/doc/auth/logout', { method: 'POST' });
+            location.reload();
+        }
+
+        function showMain() {
+            document.getElementById('auth-section').style.display = 'none';
+            document.getElementById('main-section').style.display = 'block';
+        }
 
         function switchTab(mode) {
             currentMode = mode;
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            
             document.querySelector(`.tab[onclick="switchTab('${mode}')"]`).classList.add('active');
             document.getElementById(`tab-${mode}`).classList.add('active');
-            
-            const label = document.getElementById('filename-label');
-            if (mode === 'analyze') label.innerText = '📄 분석 결과 파일명';
-            else if (mode === 'notion') label.innerText = '📄 노션 문서 파일명';
-            else label.innerText = '📄 취합본 파일명 입력';
-            
             checkButtonState();
         }
 
+        function updateModeDesc() {
+            const isFullPower = document.querySelector('input[name="analysis-mode"]:checked').value === 'true';
+            const desc = document.getElementById('mode-description');
+            desc.innerHTML = isFullPower 
+                ? "🔥 <b>전체 소스코드를 분석</b>하여 정밀한 문서를 생성합니다." 
+                : "🍃 <b>메서드 내부 로직을 제거</b>하여 토큰을 획기적으로 절약합니다.";
+        }
+
         async function handleFolderPicker() {
-            try {
-                const response = await fetch('/api/doc/open-folder-dialog');
-                if (response.ok) {
-                    const path = await response.text();
-                    if (path) {
-                        document.getElementById('project-path').value = path;
-                        // 경로 선택 시 자동으로 스캔 실행
-                        handlePathScan();
-                    }
-                }
-            } catch (e) {
-                alert("탐색기를 열 수 없습니다.");
+            const response = await fetch('/api/doc/open-folder-dialog');
+            if (response.ok) {
+                const path = await response.text();
+                if (path) { document.getElementById('project-path').value = path; handlePathScan(); }
             }
         }
 
         async function handlePathScan() {
             const path = document.getElementById('project-path').value.trim();
-            if (!path) {
-                alert("프로젝트 폴더 경로를 입력해주세요!");
-                return;
-            }
-
+            if (!path) return;
             const loading = document.getElementById('loading');
             loading.style.display = 'flex';
-            document.getElementById('loading-text').innerText = "폴더를 스캔하여 파일을 분류 중입니다...";
-
-            try {
-                const formData = new FormData();
-                formData.append('path', path);
-                const response = await fetch('/api/doc/scan-project', { method: 'POST', body: formData });
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    
-                    // 기존 리스트 초기화 (옵션에 따라 유지 가능)
-                    Object.keys(filesByCat).forEach(k => { if(k !== 'merge') filesByCat[k] = []; });
-
-                    // 결과 반영
-                    if (currentMode === 'notion') {
-                        data.controller.forEach(name => filesByCat['notion-controller'].push({name}));
-                        data.service.forEach(name => filesByCat['notion-other'].push({name}));
-                        data.dto.forEach(name => filesByCat['notion-other'].push({name}));
-                        data.mapper.forEach(name => filesByCat['notion-other'].push({name}));
-                    } else {
-                        data.controller.forEach(name => filesByCat.controller.push({name}));
-                        data.service.forEach(name => filesByCat.service.push({name}));
-                        data.dto.forEach(name => filesByCat.dto.push({name}));
-                        data.mapper.forEach(name => filesByCat.mapper.push({name}));
-                    }
-
-                    // UI 갱신
-                    Object.keys(filesByCat).forEach(renderFileList);
-                    checkButtonState();
-                    alert(`스캔 완료! 총 ${data.controller.length + data.service.length + data.dto.length + data.mapper.length}개의 파일을 찾았습니다.`);
+            document.getElementById('loading-text').innerText = "파일 분류 중...";
+            const formData = new FormData();
+            formData.append('path', path);
+            const response = await fetch('/api/doc/scan-project', { method: 'POST', body: formData });
+            if (response.ok) {
+                const data = await response.json();
+                Object.keys(filesByCat).forEach(k => { if(k !== 'merge') filesByCat[k] = []; });
+                if (currentMode === 'notion') {
+                    data.controller.forEach(name => filesByCat['notion-controller'].push({name}));
+                    [...data.service, ...data.dto, ...data.mapper].forEach(name => filesByCat['notion-other'].push({name}));
                 } else {
-                    alert(await response.text());
+                    data.controller.forEach(name => filesByCat.controller.push({name}));
+                    data.service.forEach(name => filesByCat.service.push({name}));
+                    data.dto.forEach(name => filesByCat.dto.push({name}));
+                    data.mapper.forEach(name => filesByCat.mapper.push({name}));
                 }
-            } catch (e) {
-                alert("스캔 중 오류 발생!");
-            } finally {
-                loading.style.display = 'none';
+                Object.keys(filesByCat).forEach(renderFileList);
+                checkButtonState();
             }
+            loading.style.display = 'none';
         }
 
         function addFiles(cat, files) {
-            const newFiles = Array.from(files);
-            newFiles.forEach(file => {
-                if (!filesByCat[cat].some(f => f.name === file.name)) {
-                    filesByCat[cat].push(file);
-                }
-            });
-            renderFileList(cat);
-            checkButtonState();
+            Array.from(files).forEach(file => { if (!filesByCat[cat].some(f => f.name === file.name)) filesByCat[cat].push(file); });
+            renderFileList(cat); checkButtonState();
         }
 
-        function removeFile(cat, index) {
-            filesByCat[cat].splice(index, 1);
-            renderFileList(cat);
-            checkButtonState();
-        }
+        function removeFile(cat, index) { filesByCat[cat].splice(index, 1); renderFileList(cat); checkButtonState(); }
 
         function renderFileList(cat) {
-            const fl = document.getElementById(`fl-${cat}`);
-            if(!fl) return;
+            const fl = document.getElementById(`fl-${cat}`); if(!fl) return;
             fl.innerHTML = filesByCat[cat].map((f, idx) => `
                 <div class="file-item">
-                    <span class="file-name">📄 ${f.name}</span>
+                    <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:80%;">📄 ${f.name}</span>
                     <button class="remove-btn" onclick="removeFile('${cat}', ${idx})">×</button>
                 </div>
             `).join('');
@@ -557,117 +571,60 @@
             document.getElementById('btn-merge').disabled = filesByCat.merge.length === 0;
         }
 
-        async function handleAnalyze() {
-            if (!validateFileName()) return;
-            await sendRequest('/api/doc/analyze-integrated', 'analyze');
-        }
-
-        async function handleNotion() {
-            if (!validateFileName()) return;
-            await sendRequest('/api/doc/analyze-notion', 'notion');
-        }
-
-        async function handleMerge() {
-            if (!validateFileName()) return;
-            await sendRequest('/api/doc/merge', 'merge');
-        }
+        async function handleAnalyze() { if (!validateFileName()) return; await sendRequest('/api/doc/analyze-integrated', 'analyze'); }
+        async function handleNotion() { if (!validateFileName()) return; await sendRequest('/api/doc/analyze-notion', 'notion'); }
+        async function handleMerge() { if (!validateFileName()) return; await sendRequest('/api/doc/merge', 'merge'); }
 
         async function handleAutoSummary() {
-            const loading = document.getElementById('loading');
-            const loadingText = document.getElementById('loading-text');
             const projectPath = document.getElementById('project-path').value.trim();
-            
-            if (!projectPath && filesByCat['notion-controller'].length === 0) {
-                alert("먼저 프로젝트 경로를 입력하거나 파일을 업로드해주세요!");
-                return;
-            }
-
-            loadingText.innerText = "AI가 코드를 분석하여 요약 중입니다...";
-            loading.style.display = 'flex';
-
+            const isFullPower = document.querySelector('input[name="analysis-mode"]:checked').value;
+            if (!projectPath && filesByCat['notion-controller'].length === 0) { alert("경로 입력 또는 파일 업로드 필수!"); return; }
+            document.getElementById('loading').style.display = 'flex';
             const formData = new FormData();
             if (projectPath) formData.append('projectPath', projectPath);
-            filesByCat['notion-controller'].forEach(file => { if(file.lastModified) formData.append('controller', file); });
-            filesByCat['notion-other'].forEach(file => { if(file.lastModified) formData.append('service', file); });
-
-            try {
-                const response = await fetch('/api/doc/generate-summary', { method: 'POST', body: formData });
-                if (response.ok) {
-                    const data = await response.json();
-                    document.getElementById('service-desc').value = data.description;
-                    document.getElementById('planning-design').value = data.planning;
-                } else {
-                    const errorText = await response.text();
-                    alert(errorText || "요약 생성 중 오류가 발생했습니다.");
-                }
-            } catch (e) {
-                alert("네트워크 오류!");
-            } finally {
-                loading.style.display = 'none';
+            formData.append('isFullPower', isFullPower);
+            filesByCat['notion-controller'].forEach(f => { if(f.lastModified) formData.append('controller', f); });
+            filesByCat['notion-other'].forEach(f => { if(f.lastModified) formData.append('service', f); });
+            const response = await fetch('/api/doc/generate-summary', { method: 'POST', body: formData });
+            if (response.ok) {
+                const data = await response.json();
+                document.getElementById('service-desc').value = data.description;
+                document.getElementById('planning-design').value = data.planning;
             }
+            document.getElementById('loading').style.display = 'none';
         }
 
         function validateFileName() {
             const input = document.getElementById('custom-filename');
-            const error = document.getElementById('filename-error');
-            if (!input.value.trim()) {
-                input.classList.add('error');
-                error.innerText = "* 파일명은 필수로 입력해주세요.";
-                error.style.display = 'block';
-                input.focus();
-                return false;
-            }
-            input.classList.remove('error');
-            error.style.display = 'none';
+            if (!input.value.trim()) { input.classList.add('error'); document.getElementById('filename-error').innerText = "* 파일명 필수"; document.getElementById('filename-error').style.display = 'block'; return false; }
             return true;
         }
 
         async function sendRequest(url, mode) {
             const loading = document.getElementById('loading');
-            const loadingText = document.getElementById('loading-text');
             const customFilename = document.getElementById('custom-filename').value.trim();
             const projectPath = document.getElementById('project-path').value.trim();
-            
-            loadingText.innerText = (mode === 'analyze' || mode === 'notion') ? "AI가 프로젝트 문맥을 분석 중입니다... (1분 소요)" : "엑셀 파일들을 하나로 합치는 중입니다...";
+            const isFullPower = document.querySelector('input[name="analysis-mode"]:checked').value;
             loading.style.display = 'flex';
-
             const formData = new FormData();
             if (projectPath) formData.append('projectPath', projectPath);
-
-            if (mode === 'analyze') {
-                ['controller', 'service', 'dto', 'mapper'].forEach(cat => {
-                    filesByCat[cat].forEach(file => { if(file.lastModified) formData.append(cat, file); });
-                });
-            } else if (mode === 'notion') {
-                filesByCat['notion-controller'].forEach(file => { if(file.lastModified) formData.append('controller', file); });
-                filesByCat['notion-other'].forEach(file => { if(file.lastModified) formData.append('service', file); });
+            formData.append('isFullPower', isFullPower);
+            if (mode === 'analyze') ['controller', 'service', 'dto', 'mapper'].forEach(cat => filesByCat[cat].forEach(f => { if(f.lastModified) formData.append(cat, f); }));
+            else if (mode === 'notion') {
+                filesByCat['notion-controller'].forEach(f => { if(f.lastModified) formData.append('controller', f); });
+                filesByCat['notion-other'].forEach(f => { if(f.lastModified) formData.append('service', f); });
                 formData.append('serviceDesc', document.getElementById('service-desc').value);
                 formData.append('planning', document.getElementById('planning-design').value);
                 formData.append('period', document.getElementById('dev-period').value);
-            } else {
-                filesByCat.merge.forEach(file => formData.append('files', file));
-            }
+            } else filesByCat.merge.forEach(f => formData.append('files', f));
             formData.append('fileName', customFilename);
-
-            try {
-                const response = await fetch(url, { method: 'POST', body: formData });
-                if (response.ok) {
-                    const blob = await response.blob();
-                    const downloadUrl = window.URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = downloadUrl;
-                    const ext = mode === 'notion' ? '.md' : '.xlsx';
-                    a.download = customFilename.endsWith(ext) ? customFilename : customFilename + ext;
-                    a.click();
-                } else {
-                    const errorText = await response.text();
-                    alert(errorText || "오류가 발생했습니다.");
-                }
-            } catch (e) {
-                alert("네트워크 오류!");
-            } finally {
-                loading.style.display = 'none';
-            }
+            const response = await fetch(url, { method: 'POST', body: formData });
+            if (response.ok) {
+                const blob = await response.blob();
+                const a = document.createElement('a'); a.href = window.URL.createObjectURL(blob);
+                a.download = customFilename + (mode === 'notion' ? '.md' : '.xlsx'); a.click();
+            } else alert(await response.text());
+            loading.style.display = 'none';
         }
     </script>
 </body>

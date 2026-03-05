@@ -31,7 +31,7 @@ public class Main {
 
                 System.out.println("Analyzing: " + file.getName() + " ...");
                 String content = Files.readString(file.toPath());
-                String analysisResult = agent.analyzeCode(file.getName(), content);
+                String analysisResult = agent.analyzeCode(file.getName(), content, false);
                 
                 String trimmedResult = analysisResult.trim();
                 if (trimmedResult.startsWith("[")) {
