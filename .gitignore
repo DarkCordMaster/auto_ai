@@ -1,18 +1,21 @@
-# Gradle
-.gradle/
+# Java / Gradle
+.gradle
 build/
+!gradle/wrapper/gradle-wrapper.jar
 
 # IntelliJ IDEA
-.idea/
-*.iml
+.idea
 *.iws
+*.iml
 *.ipr
 out/
-
-# System
-.DS_Store
-Thumbs.db
 
 # Environment (중요: API 키 등 비공개 정보 방지)
 .env
 application-local.properties
+prompts/
+
+# Generated Files
+*.xlsx
+*.md
+*.log
