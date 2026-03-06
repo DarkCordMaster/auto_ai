@@ -50,6 +50,57 @@ public class ExcelGenerator {
         workbook.close();
     }
 
+    public void generateTestCases(String jsonResult, String fileName) throws IOException {
+        workbook = new XSSFWorkbook();
+        initStyles();
+        sheet = workbook.createSheet("Test Scenarios");
+
+        String[] headers = {"ID", "구분", "기능명", "테스트 시나리오", "입력 데이터 샘플", "기대 결과 (AI 추론)", "테스트 결과 (Pass/Fail)"};
+        Row headerRow = sheet.createRow(0);
+        headerRow.setHeightInPoints(30f);
+        for (int i = 0; i < headers.length; i++) {
+            createCell(headerRow, i, headers[i], labelStyle);
+        }
+
+        JSONArray array = new JSONArray(jsonResult);
+        for (int i = 0; i < array.length(); i++) {
+            JSONObject obj = array.getJSONObject(i);
+            Row row = sheet.createRow(i + 1);
+            
+            createCell(row, 0, obj.optString("id", "TC-" + (i+1)), centerContentStyle);
+            createCell(row, 1, obj.optString("category", "-"), centerContentStyle);
+            createCell(row, 2, obj.optString("feature", "-"), centerContentStyle);
+            
+            String scenario = obj.optString("scenario", "-");
+            createCell(row, 3, scenario, contentStyle);
+            
+            String inputData = obj.optString("inputData", "-");
+            createCell(row, 4, inputData, contentStyle);
+            
+            String expected = obj.optString("expectedResult", "-");
+            createCell(row, 5, expected, contentStyle);
+            
+            createCell(row, 6, "", contentStyle); // 테스트 결과 칸은 비움
+
+            float h = Math.max(30f, calculateHeight(scenario, 8000));
+            h = Math.max(h, calculateHeight(expected, 8000));
+            row.setHeightInPoints(h);
+        }
+
+        sheet.setColumnWidth(0, 3000);
+        sheet.setColumnWidth(1, 3000);
+        sheet.setColumnWidth(2, 5000);
+        sheet.setColumnWidth(3, 12000);
+        sheet.setColumnWidth(4, 8000);
+        sheet.setColumnWidth(5, 12000);
+        sheet.setColumnWidth(6, 6000);
+
+        try (FileOutputStream fileOut = new FileOutputStream(fileName)) {
+            workbook.write(fileOut);
+        }
+        workbook.close();
+    }
+
     private void drawApiBlock(JSONObject api, int index) {
         drawRowWithAutoHeight(new String[]{"번호", String.valueOf(index), "기능", api.optString("title")}, new int[]{0, 1, 2, 3}, new boolean[]{false, false, false, true});
         drawRowWithAutoHeight(new String[]{"Method", api.optString("httpMethod"), "URI", api.optString("apiPath")}, new int[]{0, 1, 2, 3}, new boolean[]{false, false, false, true});

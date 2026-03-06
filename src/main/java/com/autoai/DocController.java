@@ -167,6 +167,51 @@ public class DocController {
         }
     }
 
+    @PostMapping("/analyze-testcase")
+    public ResponseEntity<?> analyzeTestCase(
+            @RequestParam(value = "controller", required = false) List<MultipartFile> controllers,
+            @RequestParam(value = "service", required = false) List<MultipartFile> services,
+            @RequestParam(value = "dto", required = false) List<MultipartFile> dtos,
+            @RequestParam(value = "mapper", required = false) List<MultipartFile> mappers,
+            @RequestParam(value = "fileName", required = false) String customFileName,
+            @RequestParam(value = "isFullPower", defaultValue = "false") boolean isFullPower,
+            jakarta.servlet.http.HttpSession session
+    ) {
+        try {
+            String finalApiKey = getApiKey(session);
+            if (finalApiKey == null || finalApiKey.isEmpty()) throw new Exception("* API 키가 설정되지 않았습니다.");
+
+            StringBuilder context = new StringBuilder();
+            appendFiles(context, "SOURCE", controllers);
+            appendFiles(context, "SOURCE", services);
+            appendFiles(context, "SOURCE", dtos);
+            appendFiles(context, "SOURCE", mappers);
+
+            if (context.toString().trim().isEmpty()) throw new Exception("* 분석할 소스코드가 없습니다.");
+
+            GeminiAgent agent = new GeminiAgent(finalApiKey);
+            ExcelGenerator generator = new ExcelGenerator();
+
+            String analysisResult = agent.generateTestCases(context.toString(), isFullPower);
+            
+            String fileName = customFileName == null || customFileName.trim().isEmpty() ? "Test_Cases" : customFileName.trim();
+            if (!fileName.endsWith(".xlsx")) fileName += ".xlsx";
+            
+            generator.generateTestCases(analysisResult, fileName);
+
+            File excelFile = new File(fileName);
+            Resource resource = new FileSystemResource(excelFile);
+            String encodedFileName = java.net.URLEncoder.encode(fileName, StandardCharsets.UTF_8).replace("+", "%20");
+
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + encodedFileName + "\"; filename*=UTF-8''" + encodedFileName)
+                    .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                    .body(resource);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
     @PostMapping("/auth/login")
     public ResponseEntity<String> login(@RequestParam("apiKey") String key, jakarta.servlet.http.HttpSession session) {
         if (key == null || key.trim().isEmpty()) return ResponseEntity.badRequest().body("* API 키를 입력해주세요.");
@@ -174,12 +219,12 @@ public class DocController {
         String trimmedKey = key.trim();
         System.out.println("🔑 Validating API Key...");
         
-        if (GeminiAgent.validateKey(trimmedKey)) {
-            session.setAttribute("GEMINI_API_KEY", trimmedKey);
-            return ResponseEntity.ok("Success");
-        } else {
+        if (!GeminiAgent.validateKey(trimmedKey)) {
             return ResponseEntity.status(401).body("* 유효하지 않은 API 키입니다. 다시 확인해주세요.");
         }
+        
+        session.setAttribute("GEMINI_API_KEY", trimmedKey);
+        return ResponseEntity.ok("Success");
     }
 
     @GetMapping("/auth/check")
@@ -243,24 +288,38 @@ public class DocController {
     @GetMapping("/open-folder-dialog")
     public ResponseEntity<String> openFolderDialog() {
         try {
+            // 시스템 OS 스타일 적용
             javax.swing.UIManager.setLookAndFeel(javax.swing.UIManager.getSystemLookAndFeelClassName());
             final String[] selectedPath = {null};
             java.util.concurrent.CountDownLatch latch = new java.util.concurrent.CountDownLatch(1);
+            
+            // Swing 스레드에서 다이얼로그 실행
             javax.swing.SwingUtilities.invokeLater(() -> {
                 javax.swing.JFileChooser fc = new javax.swing.JFileChooser();
                 fc.setFileSelectionMode(javax.swing.JFileChooser.DIRECTORIES_ONLY);
                 fc.setDialogTitle("프로젝트 폴더 선택");
+                
+                // 창이 브라우저 뒤로 숨지 않도록 최상단 프레임 생성
                 javax.swing.JFrame frame = new javax.swing.JFrame();
                 frame.setAlwaysOnTop(true);
                 frame.setDefaultCloseOperation(javax.swing.JFrame.DISPOSE_ON_CLOSE);
+                
                 int returnVal = fc.showOpenDialog(frame);
-                if (returnVal == javax.swing.JFileChooser.APPROVE_OPTION) selectedPath[0] = fc.getSelectedFile().getAbsolutePath();
+                if (returnVal == javax.swing.JFileChooser.APPROVE_OPTION) {
+                    selectedPath[0] = fc.getSelectedFile().getAbsolutePath();
+                }
                 frame.dispose();
                 latch.countDown();
             });
+            
+            // 사용자가 선택할 때까지 최대 60초 대기
             latch.await(60, java.util.concurrent.TimeUnit.SECONDS);
-            if (selectedPath[0] != null) return ResponseEntity.ok(selectedPath[0]);
-            else return ResponseEntity.noContent().build();
+            
+            if (selectedPath[0] != null) {
+                return ResponseEntity.ok(selectedPath[0]);
+            } else {
+                return ResponseEntity.noContent().build();
+            }
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body("탐색기를 열 수 없습니다: " + e.getMessage());
         }

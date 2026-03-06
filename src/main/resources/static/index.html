@@ -318,23 +318,26 @@
     <section id="main-section">
         <div class="header">
             <button class="logout-btn" onclick="handleLogout()">로그아웃</button>
-            <h1>API 문서 자동생성 AI 에이전트</h1>
+            <h1>개발 문서 자동생성 AI 에이전트</h1>
             <p style="color: #94a3b8; margin-top: 10px;">GEMINI 기반 문서 생성 및 통합 관리</p>
         </div>
 
         <div class="tabs">
             <div class="tab active" onclick="switchTab('analyze')">🚀 AI 분석 생성</div>
+            <div class="tab" onclick="switchTab('testcase')">🧪 테스트 시나리오</div>
             <div class="tab" onclick="switchTab('notion')">📝 노션 문서 생성</div>
             <div class="tab" onclick="switchTab('merge')">📚 문서 파일 취합</div>
         </div>
 
         <div class="input-group">
-            <label class="input-label">📂 프로젝트 폴더 경로 (로컬)</label>
+            <label class="input-label">📂 프로젝트 폴더 선택 (전체 분석)</label>
             <div class="input-flex">
-                <button class="btn-sub" onclick="handleFolderPicker()" title="폴더 선택">📁 선택</button>
-                <input type="text" id="project-path" class="filename-input" placeholder="직접 입력하거나 '선택' 버튼을 눌러주세요.">
-                <button class="btn-sub" onclick="handlePathScan()">🔍 자동 스캔</button>
+                <button class="btn-main" style="width: 100%; padding: 14px;" onclick="document.getElementById('folder-input').click()">
+                    📁 분석할 프로젝트 폴더 선택 (클릭하여 폴더 고르기)
+                </button>
+                <input type="file" id="folder-input" webkitdirectory directory multiple hidden onchange="handleFolderSelect(this.files)">
             </div>
+            <div id="selected-folder-info" style="font-size: 0.85rem; color: #818cf8; margin-top: 5px; text-align: center; display: none;"></div>
         </div>
 
         <div class="input-group" style="flex-direction: row; align-items: center; gap: 15px; margin-bottom: 25px;">
@@ -389,6 +392,28 @@
                 </div>
             </div>
             <div class="footer"><button class="btn-main" id="btn-generate" disabled onclick="handleAnalyze()">생성 시작</button></div>
+        </div>
+
+        <div id="tab-testcase" class="tab-content">
+            <div class="upload-card" style="width: 100%;">
+                <div class="card-title">🧪 테스트 시나리오 추출</div>
+                <div class="card-desc">소스코드를 분석하여 발생 가능한 정상/예외 시나리오를 엑셀 체크리스트로 만듭니다.</div>
+                <div class="grid">
+                    <div class="upload-card">
+                        <div class="card-title">🚀 Controllers</div>
+                        <div class="drop-zone" onclick="document.getElementById('fi-test-controller').click()">파일 선택</div>
+                        <input type="file" id="fi-test-controller" multiple hidden accept=".java" onchange="addFiles('controller', this.files)">
+                        <div class="file-list" id="fl-controller"></div>
+                    </div>
+                    <div class="upload-card">
+                        <div class="card-title">⚙️ Others</div>
+                        <div class="drop-zone" onclick="document.getElementById('fi-test-other').click()">파일 선택</div>
+                        <input type="file" id="fi-test-other" multiple hidden accept=".java,.xml" onchange="addFiles('service', this.files)">
+                        <div class="file-list" id="fl-service"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="footer"><button class="btn-main" id="btn-testcase" disabled onclick="handleTestCase()">테스트 시나리오 생성</button></div>
         </div>
 
         <div id="tab-notion" class="tab-content">
@@ -508,42 +533,58 @@
             const isFullPower = document.querySelector('input[name="analysis-mode"]:checked').value === 'true';
             const desc = document.getElementById('mode-description');
             desc.innerHTML = isFullPower 
-                ? "🔥 <b>전체 소스코드를 분석</b>하여 정밀한 문서를 생성합니다." 
-                : "🍃 <b>메서드 내부 로직을 제거</b>하여 토큰을 획기적으로 절약합니다.";
+                ? "🔥 <b>전체 소스코드를 분석</b>하여 정밀한 문서를 생성합니다. 토큰 소모가 빠를 수 있습니다."
+                : "🍃 <b>메서드 내부 로직을 제거</b>하여 토큰을 획기적으로 절약합니다.내용에 AI의 추론이 있을 수 있습니다. ";
         }
 
-        async function handleFolderPicker() {
-            const response = await fetch('/api/doc/open-folder-dialog');
-            if (response.ok) {
-                const path = await response.text();
-                if (path) { document.getElementById('project-path').value = path; handlePathScan(); }
-            }
-        }
-
-        async function handlePathScan() {
-            const path = document.getElementById('project-path').value.trim();
-            if (!path) return;
+        async function handleFolderSelect(files) {
+            if (!files || files.length === 0) return;
+            
             const loading = document.getElementById('loading');
             loading.style.display = 'flex';
-            document.getElementById('loading-text').innerText = "파일 분류 중...";
-            const formData = new FormData();
-            formData.append('path', path);
-            const response = await fetch('/api/doc/scan-project', { method: 'POST', body: formData });
-            if (response.ok) {
-                const data = await response.json();
-                Object.keys(filesByCat).forEach(k => { if(k !== 'merge') filesByCat[k] = []; });
-                if (currentMode === 'notion') {
-                    data.controller.forEach(name => filesByCat['notion-controller'].push({name}));
-                    [...data.service, ...data.dto, ...data.mapper].forEach(name => filesByCat['notion-other'].push({name}));
-                } else {
-                    data.controller.forEach(name => filesByCat.controller.push({name}));
-                    data.service.forEach(name => filesByCat.service.push({name}));
-                    data.dto.forEach(name => filesByCat.dto.push({name}));
-                    data.mapper.forEach(name => filesByCat.mapper.push({name}));
+            document.getElementById('loading-text').innerText = "폴더 분석 및 분류 중...";
+
+            // 기존 리스트 초기화 (취합 탭 제외)
+            Object.keys(filesByCat).forEach(k => { if(k !== 'merge') filesByCat[k] = []; });
+
+            for (const file of files) {
+                const name = file.name.toLowerCase();
+                const path = file.webkitRelativePath.toLowerCase();
+
+                // 제외할 폴더 패턴
+                if (path.includes('/build/') || path.includes('/out/') || path.includes('/.git/') || 
+                    path.includes('/.gradle/') || path.includes('/.idea/') || path.includes('/target/')) continue;
+
+                if (name.endsWith('.java')) {
+                    if (name.includes('controller')) {
+                        filesByCat.controller.push(file);
+                        filesByCat['notion-controller'].push(file);
+                    } else if (name.includes('service') || name.includes('svc')) {
+                        filesByCat.service.push(file);
+                        filesByCat['notion-other'].push(file);
+                    } else if (name.includes('dto') || name.includes('vo') || name.includes('model') || name.includes('request') || name.includes('response')) {
+                        filesByCat.dto.push(file);
+                        filesByCat['notion-other'].push(file);
+                    } else {
+                        filesByCat.service.push(file);
+                        filesByCat['notion-other'].push(file);
+                    }
+                } else if (name.endsWith('.xml')) {
+                    filesByCat.mapper.push(file);
+                    filesByCat['notion-other'].push(file);
                 }
-                Object.keys(filesByCat).forEach(renderFileList);
-                checkButtonState();
             }
+
+            // 첫 번째 파일의 경로에서 폴더명 추출하여 표시
+            if (files.length > 0) {
+                const rootFolder = files[0].webkitRelativePath.split('/')[0];
+                const infoDiv = document.getElementById('selected-folder-info');
+                infoDiv.innerText = `📂 선택된 폴더: ${rootFolder} (총 ${files.length}개 파일 발견)`;
+                infoDiv.style.display = 'block';
+            }
+
+            Object.keys(filesByCat).forEach(renderFileList);
+            checkButtonState();
             loading.style.display = 'none';
         }
 
@@ -565,26 +606,29 @@
         }
 
         function checkButtonState() {
-            const pathFilled = document.getElementById('project-path').value.trim() !== "";
-            document.getElementById('btn-generate').disabled = !pathFilled && filesByCat.controller.length === 0;
-            document.getElementById('btn-notion').disabled = !pathFilled && filesByCat['notion-controller'].length === 0;
-            document.getElementById('btn-merge').disabled = filesByCat.merge.length === 0;
+            const hasAnalyzeFiles = filesByCat.controller.length > 0;
+            const hasNotionFiles = filesByCat['notion-controller'].length > 0;
+            const hasMergeFiles = filesByCat.merge.length > 0;
+
+            document.getElementById('btn-generate').disabled = !hasAnalyzeFiles;
+            document.getElementById('btn-testcase').disabled = !hasAnalyzeFiles; // 테스트 케이스도 분석 파일 기준
+            document.getElementById('btn-notion').disabled = !hasNotionFiles;
+            document.getElementById('btn-merge').disabled = !hasMergeFiles;
         }
 
         async function handleAnalyze() { if (!validateFileName()) return; await sendRequest('/api/doc/analyze-integrated', 'analyze'); }
+        async function handleTestCase() { if (!validateFileName()) return; await sendRequest('/api/doc/analyze-testcase', 'analyze'); }
         async function handleNotion() { if (!validateFileName()) return; await sendRequest('/api/doc/analyze-notion', 'notion'); }
         async function handleMerge() { if (!validateFileName()) return; await sendRequest('/api/doc/merge', 'merge'); }
 
         async function handleAutoSummary() {
-            const projectPath = document.getElementById('project-path').value.trim();
             const isFullPower = document.querySelector('input[name="analysis-mode"]:checked').value;
-            if (!projectPath && filesByCat['notion-controller'].length === 0) { alert("경로 입력 또는 파일 업로드 필수!"); return; }
+            if (filesByCat['notion-controller'].length === 0) { alert("폴더를 먼저 선택하거나 파일을 업로드해주세요!"); return; }
             document.getElementById('loading').style.display = 'flex';
             const formData = new FormData();
-            if (projectPath) formData.append('projectPath', projectPath);
             formData.append('isFullPower', isFullPower);
-            filesByCat['notion-controller'].forEach(f => { if(f.lastModified) formData.append('controller', f); });
-            filesByCat['notion-other'].forEach(f => { if(f.lastModified) formData.append('service', f); });
+            filesByCat['notion-controller'].forEach(f => formData.append('controller', f));
+            filesByCat['notion-other'].forEach(f => formData.append('service', f));
             const response = await fetch('/api/doc/generate-summary', { method: 'POST', body: formData });
             if (response.ok) {
                 const data = await response.json();
@@ -603,16 +647,17 @@
         async function sendRequest(url, mode) {
             const loading = document.getElementById('loading');
             const customFilename = document.getElementById('custom-filename').value.trim();
-            const projectPath = document.getElementById('project-path').value.trim();
             const isFullPower = document.querySelector('input[name="analysis-mode"]:checked').value;
             loading.style.display = 'flex';
             const formData = new FormData();
-            if (projectPath) formData.append('projectPath', projectPath);
             formData.append('isFullPower', isFullPower);
-            if (mode === 'analyze') ['controller', 'service', 'dto', 'mapper'].forEach(cat => filesByCat[cat].forEach(f => { if(f.lastModified) formData.append(cat, f); }));
-            else if (mode === 'notion') {
-                filesByCat['notion-controller'].forEach(f => { if(f.lastModified) formData.append('controller', f); });
-                filesByCat['notion-other'].forEach(f => { if(f.lastModified) formData.append('service', f); });
+            if (mode === 'analyze') {
+                ['controller', 'service', 'dto', 'mapper'].forEach(cat => {
+                    filesByCat[cat].forEach(f => formData.append(cat, f));
+                });
+            } else if (mode === 'notion') {
+                filesByCat['notion-controller'].forEach(f => formData.append('controller', f));
+                filesByCat['notion-other'].forEach(f => formData.append('service', f));
                 formData.append('serviceDesc', document.getElementById('service-desc').value);
                 formData.append('planning', document.getElementById('planning-design').value);
                 formData.append('period', document.getElementById('dev-period').value);

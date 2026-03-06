@@ -74,16 +74,17 @@ public class GeminiAgent {
     public String analyzeForNotion(String serviceDesc, String planning, String period, String codeContent, boolean isFullPower) throws IOException {
         String cleanedCode = minifyCode(codeContent, isFullPower);
         
-        String prompt = "당신은 전문 소프트웨어 아키텍트입니다. 다음 지침에 따라 Notion에 최적화된 마크다운 문서를 작성하세요.\n\n" +
+        String prompt = "당신은 전문 소프트웨어 아키텍트입니다. 다음 지침에 따라 Notion에 최적화된 차분하고 전문적인 마크다운 문서를 작성하세요.\n\n" +
                 "### 반드시 지켜야 할 레이아웃 규칙 ###\n" +
-                "1. **프로젝트 제목 (파일명)**: 가장 상단에 `# 🚀 [프로젝트명]` 형식을 사용하고 바로 아래 가로선 `---`을 넣으세요.\n" +
-                "2. **메인 섹션 제목**: 모든 대제목(제목 1)은 아이콘을 포함하고 아래에 가로선 `---`을 넣으세요.\n" +
-                "   - 예: `# 👩‍🏫 웹 서비스 설명`, `# 👩‍💻 기획 & 설계`, `# 🗓 개발 기간`\n" +
-                "3. **접기(Toggle)**: 제목과 가로선 바로 아래에 `<details><summary>상세 내용 보기</summary>`를 사용하여 내용을 감싸세요.\n" +
-                "4. **섹션 종료**: 각 큰 섹션(details 태그 종료 후)이 끝날 때마다 가로선 `---`을 넣어 구분하세요.\n" +
-                "5. **소제목**: 소제목은 **굵은 글씨**만 사용하거나 HTML 태그를 활용해 크게 표시하고 아래에 짧은 선을 넣으세요.\n" +
-                "6. **분류 금지**: 현재 분석 중인 프로젝트의 실제 기능 단위로만 자연스럽게 설명하세요.\n" +
-                "7. **글머리 기호**: 모든 문장은 `-`로 시작하고 단락 사이 여백을 충분히 두세요.\n\n" +
+                "1. **상단 커버 (Cover)**: 문서 가장 첫 줄에 다음 단색 이미지 주소를 삽입하여 노션의 기본 단색 커버 효과를 주세요: `![Cover](https://www.colorbook.io/image/hex/1e293b.png)`\n" +
+                "   - 이미지 주소 다음 줄은 반드시 한 줄 비워두세요.\n" +
+                "2. **최상위 제목 (H1)**: `# 📂 [프로젝트명]`\n" +
+                "   - **중요**: 제목 바로 다음 줄에 `---` (가로 실선)을 넣어 섹션을 구분하세요.\n" +
+                "3. **메인 섹션 (H2)**: `## [아이콘] [섹션명]`\n" +
+                "   - 모든 H2 제목 아래에도 반드시 `---`를 넣어 가독성을 높이세요.\n" +
+                "4. **접기 기능 (Toggle)**: 실선 아래에 `<details><summary>상세 내용 보기</summary>`를 사용하여 내용을 정리하세요.\n" +
+                "5. **본문 스타일**: 핵심 기술이나 중요 단어는 `**텍스트**`로 강조하고, 문장은 `-` 불릿 포인트를 사용하여 간결하게 작성하세요.\n" +
+                "6. **여백**: 각 섹션 사이에는 충분한 공백(빈 줄)을 두어 노션 블록이 겹쳐 보이지 않게 하세요.\n\n" +
                 "### 사용자 데이터 ###\n" +
                 "- 서비스 설명: " + serviceDesc + "\n" +
                 "- 기획 설계: " + planning + "\n" +
@@ -95,20 +96,46 @@ public class GeminiAgent {
 
     public static boolean validateKey(String key) {
         OkHttpClient tempClient = new OkHttpClient.Builder()
-                .connectTimeout(10, TimeUnit.SECONDS)
-                .readTimeout(10, TimeUnit.SECONDS)
+                .connectTimeout(15, TimeUnit.SECONDS)
+                .readTimeout(15, TimeUnit.SECONDS)
                 .build();
         
-        String url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + key;
-        String jsonPayload = "{\"contents\":[{\"parts\":[{\"text\":\"ping\"}]}]}";
-        RequestBody body = RequestBody.create(jsonPayload, MediaType.parse("application/json; charset=utf-8"));
-        Request request = new Request.Builder().url(url).post(body).build();
-
-        try (Response response = tempClient.newCall(request).execute()) {
-            return response.isSuccessful();
+        // 1. 모델 리스트 조회로 키 유효성 우선 체크 (가장 가볍고 확실한 방법)
+        String listUrl = "https://generativelanguage.googleapis.com/v1beta/models?key=" + key;
+        Request listRequest = new Request.Builder().url(listUrl).get().build();
+        
+        try (Response response = tempClient.newCall(listRequest).execute()) {
+            if (response.isSuccessful()) {
+                System.out.println("✅ Key validated via Model List API.");
+                return true;
+            }
+            System.err.println("⚠️ Model List API failed: HTTP " + response.code());
         } catch (Exception e) {
-            return false;
+            System.err.println("⚠️ Connection error during key validation: " + e.getMessage());
         }
+
+        // 2. 실패 시 기존 방식(컨텐츠 생성)으로 한 번 더 시도
+        String[] testModels = {"gemini-1.5-flash", "gemini-2.0-flash"};
+        String jsonPayload = "{\"contents\":[{\"parts\":[{\"text\":\"1\"}]}]}";
+        RequestBody body = RequestBody.create(jsonPayload, MediaType.parse("application/json; charset=utf-8"));
+
+        for (String model : testModels) {
+            String url = "https://generativelanguage.googleapis.com/v1beta/models/" + model + ":generateContent?key=" + key;
+            Request request = new Request.Builder().url(url).post(body).build();
+            
+            try (Response response = tempClient.newCall(request).execute()) {
+                if (response.isSuccessful()) {
+                    System.out.println("✅ Key validated with " + model);
+                    return true;
+                }
+                System.err.println("⚠️ " + model + " validation failed: HTTP " + response.code());
+            } catch (Exception e) {
+                System.err.println("⚠️ Error validating with " + model + ": " + e.getMessage());
+            }
+        }
+        
+        System.err.println("❌ All key validation attempts failed.");
+        return false;
     }
 
     private String executeMultiModelRequest(String prompt, boolean isJsonOnly) throws IOException {
@@ -177,6 +204,30 @@ public class GeminiAgent {
                 throw new IOException("Retry interrupted", e);
             }
         }
+    }
+
+    public String generateTestCases(String codeContent, boolean isFullPower) throws IOException {
+        String cleanedCode = minifyCode(codeContent, isFullPower);
+        
+        String prompt = "당신은 전문 QA 엔지니어입니다. 제공된 소스코드를 분석하여 상세한 테스트 시나리오(Test Case)를 JSON 배열 형식으로 작성하세요.\n\n" +
+                "### 반드시 다음 JSON 구조를 지키세요 ###\n" +
+                "[\n" +
+                "  {\n" +
+                "    \"id\": \"TC-01\",\n" +
+                "    \"category\": \"정상/예외\",\n" +
+                "    \"feature\": \"기능명\",\n" +
+                "    \"scenario\": \"테스트 시나리오 설명\",\n" +
+                "    \"inputData\": \"입력 데이터 샘플 (JSON 또는 텍스트)\",\n" +
+                "    \"expectedResult\": \"AI가 추론한 기대 결과 내용\"\n" +
+                "  }\n" +
+                "]\n\n" +
+                "### 중요 지침 ###\n" +
+                "1. 정상적인 흐름뿐만 아니라, 필수값 누락, 조건 미달 등 발생 가능한 예외 상황을 최대한 상세히 추출하세요.\n" +
+                "2. 'expectedResult'는 코드의 로직(if문, 유효성 검사 등)을 바탕으로 정확하게 추론하세요.\n" +
+                "3. 응답은 반드시 순수 JSON 배열만 출력하세요.\n\n" +
+                "### 분석할 소스코드 ###\n" + cleanedCode;
+
+        return executeMultiModelRequest(prompt, true);
     }
 
     private String minifyCode(String code, boolean isFullPower) {
