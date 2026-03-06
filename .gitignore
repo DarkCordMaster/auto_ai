@@ -13,7 +13,8 @@ out/
 # Environment (중요: API 키 등 비공개 정보 방지)
 .env
 application-local.properties
-prompts/
+prompts/*
+!prompts/*.sample
 
 # Generated Files
 *.xlsx
